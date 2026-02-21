@@ -1,15 +1,16 @@
 ﻿:root {
-  --title-strong: #241407;
-  --paper-shadow: rgba(64, 37, 17, 0.2);
-  --bg-top: #f7efe1;
-  --bg-mid: #e8d7bd;
-  --bg-bottom: #d7b98b;
-  --ink: #2e2012;
-  --muted: #6b4c2f;
-  --card: rgba(255, 250, 243, 0.86);
-  --stroke: rgba(103, 70, 41, 0.25);
-  --accent: #b24f2a;
-  --accent-soft: #e3a36a;
+  --title-strong: #231103;
+  --paper-shadow: rgba(109, 43, 12, 0.22);
+  --bg-top: #fff4d9;
+  --bg-mid: #ffd2a8;
+  --bg-bottom: #ffaf8a;
+  --ink: #2b1406;
+  --muted: #6a3417;
+  --card: rgba(255, 248, 238, 0.9);
+  --stroke: rgba(133, 54, 21, 0.34);
+  --accent: #d14b1f;
+  --accent-soft: #f9b43a;
+  --accent-bright: #ff7a28;
 }
 
 * {
@@ -21,7 +22,9 @@ body {
   font-family: "Tiro Devanagari Marathi", serif;
   color: var(--ink);
   min-height: 100vh;
-  background: linear-gradient(165deg, var(--bg-top), var(--bg-mid) 45%, var(--bg-bottom));
+  background:
+    radial-gradient(circle at 85% 12%, rgba(255, 255, 255, 0.45), transparent 30%),
+    linear-gradient(155deg, var(--bg-top), var(--bg-mid) 46%, var(--bg-bottom));
   position: relative;
   overflow-x: hidden;
 }
@@ -31,9 +34,9 @@ body {
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(circle at 12% 22%, rgba(255, 255, 255, 0.45), transparent 35%),
-    radial-gradient(circle at 82% 10%, rgba(255, 221, 173, 0.35), transparent 36%),
-    radial-gradient(circle at 70% 72%, rgba(178, 79, 42, 0.1), transparent 38%);
+    radial-gradient(circle at 10% 18%, rgba(255, 255, 255, 0.55), transparent 33%),
+    radial-gradient(circle at 85% 15%, rgba(255, 194, 117, 0.42), transparent 38%),
+    radial-gradient(circle at 68% 78%, rgba(209, 75, 31, 0.16), transparent 36%);
 }
 
 .hero,
@@ -59,6 +62,8 @@ footer {
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--accent);
+  font-weight: 700;
+  text-shadow: 0 2px 0 rgba(255, 233, 200, 0.75);
 }
 
 h1 {
@@ -89,7 +94,7 @@ h1 {
   border-radius: 2rem;
   border: 5px solid rgba(255, 244, 227, 0.9);
   box-shadow: 0 24px 50px rgba(62, 38, 18, 0.28);
-  background: linear-gradient(135deg, #f5d7b4, #c88f5b);
+  background: linear-gradient(135deg, #ffd56f, #ff8f54);
 }
 
 .hero-text {
@@ -110,7 +115,7 @@ main {
   border-radius: 1.2rem;
   padding: 1.4rem 1.2rem;
   backdrop-filter: blur(4px);
-  box-shadow: 0 16px 36px var(--paper-shadow);
+  box-shadow: 0 14px 30px var(--paper-shadow);
 }
 
 .card h2 {
@@ -134,32 +139,47 @@ main {
   align-items: end;
   gap: 1rem;
   flex-wrap: wrap;
+  margin-bottom: 0.8rem;
 }
 
 .poem-grid {
-  margin: 1rem 0 0;
-  padding-left: 1.2rem;
+  margin: 0.4rem 0 0;
+  padding: 0;
+  list-style: none;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 0.75rem 1.2rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem 1.8rem;
+}
+
+.poem-grid li {
+  min-width: 0;
 }
 
 .poem-grid a {
+  display: block;
   text-decoration: none;
   color: var(--ink);
-  border-bottom: 1px dashed rgba(46, 32, 18, 0.45);
-  transition: color 220ms ease, border-color 220ms ease;
+  border: 1px solid rgba(133, 54, 21, 0.26);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.75), rgba(255, 233, 198, 0.62));
+  box-shadow: 0 6px 16px rgba(117, 45, 13, 0.12);
+  transition: transform 220ms ease, color 220ms ease, border-color 220ms ease, box-shadow 220ms ease, background-color 220ms ease;
+  padding: 0.62rem 0.72rem;
+  border-radius: 0.7rem;
+  line-height: 1.45;
 }
 
 .poem-grid a:hover {
   color: var(--accent);
-  border-color: var(--accent);
+  border-color: var(--accent-bright);
+  background: linear-gradient(135deg, rgba(255, 225, 169, 0.82), rgba(255, 194, 124, 0.72));
+  box-shadow: 0 12px 24px rgba(117, 45, 13, 0.2);
+  transform: translateY(-2px);
 }
 
 footer {
   padding: 0 1.25rem 2rem;
   text-align: center;
-  color: rgba(46, 32, 18, 0.7);
+  color: rgba(46, 32, 18, 0.76);
 }
 
 .poem-page {
@@ -189,8 +209,8 @@ footer {
   line-height: 1.95;
   font-size: 1.08rem;
   padding: 0.85rem 0.85rem 0.85rem 1rem;
-  border-left: 3px solid rgba(178, 79, 42, 0.35);
-  background: linear-gradient(90deg, rgba(255, 244, 227, 0.48), rgba(255, 244, 227, 0));
+  border-left: 3px solid rgba(209, 75, 31, 0.45);
+  background: linear-gradient(90deg, rgba(255, 210, 163, 0.32), rgba(255, 244, 227, 0));
   border-radius: 0.5rem;
 }
 
@@ -199,7 +219,7 @@ footer {
   margin-top: 1.3rem;
   text-decoration: none;
   color: var(--accent);
-  border-bottom: 1px solid rgba(178, 79, 42, 0.45);
+  border-bottom: 1px solid rgba(209, 75, 31, 0.45);
 }
 
 @keyframes rise-in {
@@ -221,5 +241,10 @@ footer {
 
   .subtitle {
     margin-inline: auto;
+  }
+
+  .poem-grid {
+    grid-template-columns: 1fr;
+    gap: 0.7rem;
   }
 }
