@@ -37,8 +37,10 @@ const themeStorageKey = "kesar_tarang_theme";
 function setTheme(theme) {
   document.body.dataset.theme = theme;
   if (themeToggle) {
-    themeToggle.textContent = theme === "night" ? "दिवस रंग" : "रात्र रंग";
+    themeToggle.textContent = theme === "night" ? "☀" : "🌙";
     themeToggle.setAttribute("aria-pressed", theme === "night" ? "true" : "false");
+    themeToggle.setAttribute("aria-label", theme === "night" ? "दिन रंग" : "रात्र रंग");
+    themeToggle.title = theme === "night" ? "दिन रंग" : "रात्र रंग";
   }
 }
 
@@ -62,7 +64,7 @@ if (poemList) {
     const li = document.createElement("li");
     const link = document.createElement("a");
     link.href = poem.file;
-    link.textContent = `${poem.num}. ${poem.title}`;
+    link.textContent = poem.title;
     li.appendChild(link);
     poemList.appendChild(li);
   }
