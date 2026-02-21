@@ -31,6 +31,30 @@
   { num: "30", file: "poems/poem-30.html", title: "My dear Ved" },
 ];
 
+const themeToggle = document.getElementById("theme-toggle");
+const themeStorageKey = "kesar_tarang_theme";
+
+function setTheme(theme) {
+  document.body.dataset.theme = theme;
+  if (themeToggle) {
+    themeToggle.textContent = theme === "night" ? "दिवस रंग" : "रात्र रंग";
+    themeToggle.setAttribute("aria-pressed", theme === "night" ? "true" : "false");
+  }
+}
+
+if (themeToggle) {
+  const savedTheme = localStorage.getItem(themeStorageKey);
+  const prefersNight = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const initialTheme = savedTheme || (prefersNight ? "night" : "day");
+  setTheme(initialTheme);
+
+  themeToggle.addEventListener("click", () => {
+    const nextTheme = document.body.dataset.theme === "night" ? "day" : "night";
+    setTheme(nextTheme);
+    localStorage.setItem(themeStorageKey, nextTheme);
+  });
+}
+
 const poemList = document.getElementById("poem-list");
 
 if (poemList) {
