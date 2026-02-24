@@ -1,16 +1,17 @@
-﻿:root {
-  --title-strong: #3c0d00;
-  --paper-shadow: rgba(130, 39, 11, 0.2);
-  --bg-top: #fff3b8;
-  --bg-mid: #ffc48c;
-  --bg-bottom: #ff8f99;
-  --ink: #341206;
-  --muted: #813218;
-  --card: rgba(255, 250, 242, 0.9);
-  --stroke: rgba(172, 62, 23, 0.36);
-  --accent: #dd3f1d;
-  --accent-soft: #ffbf3f;
-  --accent-bright: #ff5f22;
+:root {
+  /* Vibrant day palette */
+  --title-strong: #2a0233;
+  --paper-shadow: rgba(162, 39, 93, 0.22);
+  --bg-top: #ffe8ff;
+  --bg-mid: #ffd27a;
+  --bg-bottom: #ff7b7b;
+  --ink: #300418;
+  --muted: #7b2152;
+  --card: rgba(255, 249, 246, 0.92);
+  --stroke: rgba(193, 67, 102, 0.42);
+  --accent: #f24a72;
+  --accent-soft: #ffb84a;
+  --accent-bright: #ff5e9c;
 }
 
 * {
@@ -97,15 +98,17 @@ footer {
   font-family: "Marcellus", serif;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--accent-bright);
   font-weight: 700;
-  text-shadow: 0 2px 0 rgba(255, 233, 200, 0.8);
+  text-shadow:
+    0 2px 0 rgba(255, 233, 250, 0.9),
+    0 8px 18px rgba(199, 62, 125, 0.35);
 }
 
 .theme-toggle {
-  position: fixed;
-  right: 1rem;
-  bottom: 1rem;
+  position: absolute;
+  right: 1.25rem;
+  bottom: 1.75rem;
   z-index: 5;
   border: 1px solid rgba(172, 62, 23, 0.44);
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 231, 174, 0.86));
@@ -140,6 +143,10 @@ h1 {
   line-height: 1.2;
   font-weight: 800;
   color: var(--title-strong);
+  background: linear-gradient(120deg, #ff7b7b, #ffb84a, #ff5e9c);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
   text-wrap: balance;
 }
 
