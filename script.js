@@ -1,4 +1,4 @@
-﻿const poems = [
+const poems = [
   { num: "01", file: "poems/poem-01.html", title: "सात रंग प्रेमाचे" },
   { num: "02", file: "poems/poem-02.html", title: "प्रेमाचं दुकान" },
   { num: "03", file: "poems/poem-03.html", title: "माझे बाबा!" },
@@ -33,14 +33,95 @@
 
 const themeToggle = document.getElementById("theme-toggle");
 const themeStorageKey = "kesar_tarang_theme";
+const languageStorageKey = "kesar_tarang_language";
+const supportedLanguages = ["mr", "hi", "en"];
+
+const languageLabels = {
+  mr: "MR",
+  hi: "HI",
+  en: "EN",
+};
+
+const themeToggleLabels = {
+  mr: { day: "दिन रंग", night: "रात्र रंग" },
+  hi: { day: "दिन मोड", night: "रात मोड" },
+  en: { day: "Day mode", night: "Night mode" },
+};
+
+const uiTranslations = {
+  mr: {
+    languageSwitcherLabel: "भाषा",
+    poemFallback: "मूळ मराठी कविता दाखवली आहे. हिंदी/इंग्रजी अनुवाद लवकरच जोडला जाईल.",
+    footer: {
+      facebook: "Facebook",
+      instagram: "Instagram",
+      whatsapp: "WhatsApp: +91 98812 41620",
+      email: "chaitrali.pandharpure@gmail.com",
+    },
+  },
+  hi: {
+    languageSwitcherLabel: "भाषा",
+    poemFallback: "अभी मूल मराठी कविता दिखाई जा रही है। हिंदी अनुवाद जल्द जोड़ा जाएगा।",
+    footer: {
+      facebook: "Facebook",
+      instagram: "Instagram",
+      whatsapp: "व्हाट्सऐप: +91 98812 41620",
+      email: "chaitrali.pandharpure@gmail.com",
+    },
+  },
+  en: {
+    languageSwitcherLabel: "Language",
+    poemFallback: "Showing original Marathi poem. English translation will be added soon.",
+    footer: {
+      facebook: "Facebook",
+      instagram: "Instagram",
+      whatsapp: "WhatsApp: +91 98812 41620",
+      email: "chaitrali.pandharpure@gmail.com",
+    },
+  },
+};
+
+// Scaffold for future manual poem translations.
+const poemTranslationCatalog = {
+  hi: {},
+  en: {},
+};
+
+let currentLanguage = getInitialLanguage();
+const poemOriginalContent = captureOriginalPoemContent();
+
+function getInitialLanguage() {
+  const savedLanguage = localStorage.getItem(languageStorageKey);
+  return supportedLanguages.includes(savedLanguage) ? savedLanguage : "mr";
+}
+
+function captureOriginalPoemContent() {
+  const title = document.querySelector(".poem-title");
+  const text = document.querySelector(".poem-text");
+  if (!title || !text) {
+    return null;
+  }
+  return {
+    title: title.textContent,
+    text: text.textContent,
+    documentTitle: document.title,
+  };
+}
+
+function getPoemPageId() {
+  const path = window.location.pathname || "";
+  const match = path.match(/poem-\d+\.html$/);
+  return match ? match[0] : null;
+}
 
 function setTheme(theme) {
   document.body.dataset.theme = theme;
   if (themeToggle) {
+    const labels = themeToggleLabels[currentLanguage] || themeToggleLabels.mr;
     themeToggle.textContent = theme === "night" ? "☀" : "🌙";
     themeToggle.setAttribute("aria-pressed", theme === "night" ? "true" : "false");
-    themeToggle.setAttribute("aria-label", theme === "night" ? "दिन रंग" : "रात्र रंग");
-    themeToggle.title = theme === "night" ? "दिन रंग" : "रात्र रंग";
+    themeToggle.setAttribute("aria-label", theme === "night" ? labels.day : labels.night);
+    themeToggle.title = theme === "night" ? labels.day : labels.night;
   }
 }
 
@@ -70,27 +151,135 @@ if (poemList) {
   }
 }
 
-function ensureFooterLinks() {
+function ensureFooterLinks(language) {
   const footer = document.querySelector("footer");
-  if (!footer || footer.querySelector(".footer-links")) {
+  if (!footer) {
     return;
   }
 
-  const links = document.createElement("p");
-  links.className = "footer-links";
-  links.innerHTML = [
-    '<a href="#" aria-label="Facebook placeholder">Facebook</a>',
-    '<a href="#" aria-label="Instagram placeholder">Instagram</a>',
-    '<a href="https://wa.me/919881241620" target="_blank" rel="noopener noreferrer">WhatsApp: +91 98812 41620</a>',
-    '<a href="mailto:chaitrali.pandharpure@gmail.com">chaitrali.pandharpure@gmail.com</a>',
-  ].join(" • ");
-
-  const copyright = footer.querySelector(".copyright");
-  if (copyright) {
-    footer.insertBefore(links, copyright);
-  } else {
-    footer.appendChild(links);
+  let links = footer.querySelector(".footer-links");
+  if (!links) {
+    links = document.createElement("p");
+    links.className = "footer-links";
+    const copyright = footer.querySelector(".copyright");
+    if (copyright) {
+      footer.insertBefore(links, copyright);
+    } else {
+      footer.appendChild(links);
+    }
   }
+
+  const copy = (uiTranslations[language] || uiTranslations.mr).footer;
+  links.innerHTML = [
+    `<a href="#" aria-label="${copy.facebook} placeholder">${copy.facebook}</a>`,
+    `<a href="#" aria-label="${copy.instagram} placeholder">${copy.instagram}</a>`,
+    `<a href="https://wa.me/919881241620" target="_blank" rel="noopener noreferrer">${copy.whatsapp}</a>`,
+    `<a href="mailto:chaitrali.pandharpure@gmail.com">${copy.email}</a>`,
+  ].join(" • ");
 }
 
-ensureFooterLinks();
+function ensureLanguageToggle() {
+  let wrapper = document.getElementById("language-toggle");
+  if (wrapper) {
+    return wrapper;
+  }
+
+  wrapper = document.createElement("div");
+  wrapper.id = "language-toggle";
+  wrapper.className = "language-toggle";
+  wrapper.setAttribute("role", "group");
+  wrapper.setAttribute("aria-label", uiTranslations[currentLanguage].languageSwitcherLabel);
+
+  for (const language of supportedLanguages) {
+    const option = document.createElement("button");
+    option.type = "button";
+    option.className = "language-option";
+    option.dataset.lang = language;
+    option.textContent = languageLabels[language];
+    option.addEventListener("click", () => {
+      setLanguage(language);
+    });
+    wrapper.appendChild(option);
+  }
+
+  document.body.appendChild(wrapper);
+  return wrapper;
+}
+
+function syncLanguageToggleState() {
+  const wrapper = ensureLanguageToggle();
+  const copy = uiTranslations[currentLanguage] || uiTranslations.mr;
+  wrapper.setAttribute("aria-label", copy.languageSwitcherLabel);
+
+  wrapper.querySelectorAll(".language-option").forEach((button) => {
+    const active = button.dataset.lang === currentLanguage;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", active ? "true" : "false");
+  });
+}
+
+function ensurePoemFallbackNote(language) {
+  if (!poemOriginalContent) {
+    return;
+  }
+
+  const poemTitle = document.querySelector(".poem-title");
+  const poemText = document.querySelector(".poem-text");
+  if (!poemTitle || !poemText) {
+    return;
+  }
+
+  const poemId = getPoemPageId();
+  const translatedPoem = poemId ? poemTranslationCatalog[language]?.[poemId] : null;
+  const noteText = (uiTranslations[language] || uiTranslations.mr).poemFallback;
+
+  if (translatedPoem && translatedPoem.title && translatedPoem.text) {
+    poemTitle.textContent = translatedPoem.title;
+    poemText.textContent = translatedPoem.text;
+    document.title = translatedPoem.title;
+    const existing = document.querySelector(".translation-note");
+    if (existing) {
+      existing.remove();
+    }
+    return;
+  }
+
+  poemTitle.textContent = poemOriginalContent.title;
+  poemText.textContent = poemOriginalContent.text;
+  document.title = poemOriginalContent.documentTitle;
+
+  if (language === "mr") {
+    const existing = document.querySelector(".translation-note");
+    if (existing) {
+      existing.remove();
+    }
+    return;
+  }
+
+  let note = document.querySelector(".translation-note");
+  if (!note) {
+    note = document.createElement("p");
+    note.className = "translation-note";
+    const poemMeta = document.querySelector(".poem-meta");
+    if (poemMeta) {
+      poemMeta.insertAdjacentElement("afterend", note);
+    } else {
+      poemTitle.insertAdjacentElement("afterend", note);
+    }
+  }
+  note.textContent = noteText;
+}
+
+function setLanguage(language) {
+  const nextLanguage = supportedLanguages.includes(language) ? language : "mr";
+  currentLanguage = nextLanguage;
+  document.documentElement.lang = nextLanguage;
+  localStorage.setItem(languageStorageKey, nextLanguage);
+  syncLanguageToggleState();
+  ensureFooterLinks(nextLanguage);
+  ensurePoemFallbackNote(nextLanguage);
+  setTheme(document.body.dataset.theme || "day");
+}
+
+ensureLanguageToggle();
+setLanguage(currentLanguage);

@@ -140,6 +140,39 @@ footer {
   outline-offset: 2px;
 }
 
+.language-toggle {
+  position: fixed;
+  right: max(0.7rem, env(safe-area-inset-right));
+  bottom: calc(max(0.9rem, env(safe-area-inset-bottom)) + 3.55rem);
+  z-index: 1000;
+  display: inline-flex;
+  gap: 0.2rem;
+  padding: 0.22rem;
+  border-radius: 999px;
+  border: 1px solid rgba(95, 132, 212, 0.44);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(224, 238, 255, 0.9));
+  box-shadow: 0 10px 22px rgba(71, 103, 186, 0.2);
+}
+
+.language-option {
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  min-width: 2.2rem;
+  height: 1.9rem;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.language-option.active {
+  background: rgba(95, 141, 255, 0.22);
+  color: var(--title-strong);
+}
+
 h1 {
   margin: 0.45rem 0;
   font-size: clamp(1.8rem, 4vw, 3rem);
@@ -196,6 +229,21 @@ body[data-theme="night"] .theme-toggle {
   background: linear-gradient(135deg, rgba(44, 26, 74, 0.95), rgba(76, 35, 104, 0.9));
   color: #ffe8c8;
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.44);
+}
+
+body[data-theme="night"] .language-toggle {
+  border-color: rgba(255, 190, 130, 0.45);
+  background: linear-gradient(135deg, rgba(44, 26, 74, 0.95), rgba(76, 35, 104, 0.9));
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.44);
+}
+
+body[data-theme="night"] .language-option {
+  color: #ffe8c8;
+}
+
+body[data-theme="night"] .language-option.active {
+  background: rgba(255, 189, 89, 0.3);
+  color: #fff4de;
 }
 
 body[data-theme="night"] .portrait {
@@ -392,6 +440,21 @@ body[data-theme="night"] .footer-links a {
 .poem-meta {
   color: var(--muted);
   margin: 0 0 1.4rem;
+}
+
+.translation-note {
+  margin: -0.5rem 0 1rem;
+  padding: 0.5rem 0.75rem;
+  border-left: 3px solid rgba(95, 132, 212, 0.5);
+  background: linear-gradient(90deg, rgba(206, 228, 255, 0.55), rgba(255, 255, 255, 0));
+  border-radius: 0.4rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+body[data-theme="night"] .translation-note {
+  border-left-color: rgba(255, 189, 89, 0.62);
+  background: linear-gradient(90deg, rgba(255, 166, 92, 0.16), rgba(35, 18, 52, 0.08));
 }
 
 .poem-text {
