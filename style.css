@@ -478,6 +478,14 @@ body[data-theme="night"] .translation-note {
   border-radius: 0.5rem;
 }
 
+.poem-line {
+  display: block;
+}
+
+.poem-line-empty {
+  min-height: 1.15em;
+}
+
 .back-link {
   display: inline-block;
   margin-top: 1.3rem;

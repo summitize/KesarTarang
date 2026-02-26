@@ -85,6 +85,32 @@ if (poemList) {
   }
 }
 
+function preservePoemLineBreaks() {
+  const poemText = document.querySelector(".poem-text");
+  if (!poemText || poemText.dataset.linesPrepared === "true") {
+    return;
+  }
+
+  const rawText = poemText.textContent.replace(/\r\n?/g, "\n");
+  const lines = rawText.split("\n");
+  poemText.textContent = "";
+
+  lines.forEach((line) => {
+    const span = document.createElement("span");
+    span.className = "poem-line";
+    if (line.length === 0) {
+      span.classList.add("poem-line-empty");
+      span.innerHTML = "&nbsp;";
+      span.setAttribute("aria-hidden", "true");
+    } else {
+      span.textContent = line;
+    }
+    poemText.appendChild(span);
+  });
+
+  poemText.dataset.linesPrepared = "true";
+}
+
 function ensureFooterLinks() {
   const footer = document.querySelector("footer");
   if (!footer || footer.querySelector(".footer-links")) {
@@ -242,6 +268,7 @@ function setLanguage(language, options = {}) {
   }
 }
 
+preservePoemLineBreaks();
 ensureFooterLinks();
 ensureLanguageToggle();
 setLanguage(currentLanguage, { reload: false });
