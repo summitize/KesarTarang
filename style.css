@@ -397,7 +397,7 @@ body[data-theme="night"] .footer-links a {
 .poem-text {
   white-space: pre-wrap;
   line-height: 1.95;
-  font-size: 1.08rem;
+  font-size: 1.12rem;
   padding: 0.85rem 0.85rem 0.85rem 1rem;
   border-left: 3px solid rgba(221, 63, 29, 0.52);
   background: linear-gradient(90deg, rgba(255, 211, 154, 0.42), rgba(255, 244, 227, 0));
