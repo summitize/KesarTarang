@@ -316,6 +316,7 @@ main {
   display: block;
   text-decoration: none;
   color: var(--ink);
+  text-align: center;
   border: 1px solid rgba(172, 62, 23, 0.3);
   background:
     radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.6), transparent 24%),
