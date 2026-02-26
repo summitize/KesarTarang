@@ -457,6 +457,17 @@ body[data-theme="night"] .translation-note {
   background: linear-gradient(90deg, rgba(255, 166, 92, 0.16), rgba(35, 18, 52, 0.08));
 }
 
+.goog-te-banner-frame.skiptranslate,
+.goog-te-balloon-frame,
+#goog-gt-tt {
+  display: none !important;
+}
+
+.goog-text-highlight {
+  background: none !important;
+  box-shadow: none !important;
+}
+
 .poem-text {
   white-space: pre-wrap;
   line-height: 1.95;

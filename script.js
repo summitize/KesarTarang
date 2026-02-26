@@ -35,90 +35,24 @@ const themeToggle = document.getElementById("theme-toggle");
 const themeStorageKey = "kesar_tarang_theme";
 const languageStorageKey = "kesar_tarang_language";
 const supportedLanguages = ["mr", "hi", "en"];
-
-const languageLabels = {
-  mr: "MR",
-  hi: "HI",
-  en: "EN",
-};
-
-const themeToggleLabels = {
-  mr: { day: "दिन रंग", night: "रात्र रंग" },
-  hi: { day: "दिन मोड", night: "रात मोड" },
-  en: { day: "Day mode", night: "Night mode" },
-};
-
-const uiTranslations = {
-  mr: {
-    languageSwitcherLabel: "भाषा",
-    poemFallback: "मूळ मराठी कविता दाखवली आहे. हिंदी/इंग्रजी अनुवाद लवकरच जोडला जाईल.",
-    footer: {
-      facebook: "Facebook",
-      instagram: "Instagram",
-      whatsapp: "WhatsApp: +91 98812 41620",
-      email: "chaitrali.pandharpure@gmail.com",
-    },
-  },
-  hi: {
-    languageSwitcherLabel: "भाषा",
-    poemFallback: "अभी मूल मराठी कविता दिखाई जा रही है। हिंदी अनुवाद जल्द जोड़ा जाएगा।",
-    footer: {
-      facebook: "Facebook",
-      instagram: "Instagram",
-      whatsapp: "व्हाट्सऐप: +91 98812 41620",
-      email: "chaitrali.pandharpure@gmail.com",
-    },
-  },
-  en: {
-    languageSwitcherLabel: "Language",
-    poemFallback: "Showing original Marathi poem. English translation will be added soon.",
-    footer: {
-      facebook: "Facebook",
-      instagram: "Instagram",
-      whatsapp: "WhatsApp: +91 98812 41620",
-      email: "chaitrali.pandharpure@gmail.com",
-    },
-  },
-};
-
-// Scaffold for future manual poem translations.
-const poemTranslationCatalog = {
-  hi: {},
-  en: {},
-};
+const languageLabels = { mr: "MR", hi: "HI", en: "EN" };
 
 let currentLanguage = getInitialLanguage();
-const poemOriginalContent = captureOriginalPoemContent();
 
 function getInitialLanguage() {
-  const savedLanguage = localStorage.getItem(languageStorageKey);
-  return supportedLanguages.includes(savedLanguage) ? savedLanguage : "mr";
+  const saved = localStorage.getItem(languageStorageKey);
+  return supportedLanguages.includes(saved) ? saved : "mr";
 }
 
-function captureOriginalPoemContent() {
-  const title = document.querySelector(".poem-title");
-  const text = document.querySelector(".poem-text");
-  if (!title || !text) {
-    return null;
-  }
-  return {
-    title: title.textContent,
-    text: text.textContent,
-    documentTitle: document.title,
-  };
-}
-
-function getPoemPageId() {
-  const path = window.location.pathname || "";
-  const match = path.match(/poem-\d+\.html$/);
-  return match ? match[0] : null;
+function getThemeLabels() {
+  return { day: "Day mode", night: "Night mode" };
 }
 
 function setTheme(theme) {
   document.body.dataset.theme = theme;
   if (themeToggle) {
-    const labels = themeToggleLabels[currentLanguage] || themeToggleLabels.mr;
-    themeToggle.textContent = theme === "night" ? "☀" : "🌙";
+    const labels = getThemeLabels();
+    themeToggle.textContent = theme === "night" ? "\u2600" : "\uD83C\uDF19";
     themeToggle.setAttribute("aria-pressed", theme === "night" ? "true" : "false");
     themeToggle.setAttribute("aria-label", theme === "night" ? labels.day : labels.night);
     themeToggle.title = theme === "night" ? labels.day : labels.night;
@@ -151,31 +85,27 @@ if (poemList) {
   }
 }
 
-function ensureFooterLinks(language) {
+function ensureFooterLinks() {
   const footer = document.querySelector("footer");
-  if (!footer) {
+  if (!footer || footer.querySelector(".footer-links")) {
     return;
   }
 
-  let links = footer.querySelector(".footer-links");
-  if (!links) {
-    links = document.createElement("p");
-    links.className = "footer-links";
-    const copyright = footer.querySelector(".copyright");
-    if (copyright) {
-      footer.insertBefore(links, copyright);
-    } else {
-      footer.appendChild(links);
-    }
-  }
-
-  const copy = (uiTranslations[language] || uiTranslations.mr).footer;
+  const links = document.createElement("p");
+  links.className = "footer-links";
   links.innerHTML = [
-    `<a href="#" aria-label="${copy.facebook} placeholder">${copy.facebook}</a>`,
-    `<a href="#" aria-label="${copy.instagram} placeholder">${copy.instagram}</a>`,
-    `<a href="https://wa.me/919881241620" target="_blank" rel="noopener noreferrer">${copy.whatsapp}</a>`,
-    `<a href="mailto:chaitrali.pandharpure@gmail.com">${copy.email}</a>`,
-  ].join(" • ");
+    '<a href="#" aria-label="Facebook placeholder">Facebook</a>',
+    '<a href="#" aria-label="Instagram placeholder">Instagram</a>',
+    '<a href="https://wa.me/919881241620" target="_blank" rel="noopener noreferrer">WhatsApp: +91 98812 41620</a>',
+    '<a href="mailto:chaitrali.pandharpure@gmail.com">chaitrali.pandharpure@gmail.com</a>',
+  ].join(" | ");
+
+  const copyright = footer.querySelector(".copyright");
+  if (copyright) {
+    footer.insertBefore(links, copyright);
+  } else {
+    footer.appendChild(links);
+  }
 }
 
 function ensureLanguageToggle() {
@@ -188,7 +118,7 @@ function ensureLanguageToggle() {
   wrapper.id = "language-toggle";
   wrapper.className = "language-toggle";
   wrapper.setAttribute("role", "group");
-  wrapper.setAttribute("aria-label", uiTranslations[currentLanguage].languageSwitcherLabel);
+  wrapper.setAttribute("aria-label", "Language");
 
   for (const language of supportedLanguages) {
     const option = document.createElement("button");
@@ -208,9 +138,6 @@ function ensureLanguageToggle() {
 
 function syncLanguageToggleState() {
   const wrapper = ensureLanguageToggle();
-  const copy = uiTranslations[currentLanguage] || uiTranslations.mr;
-  wrapper.setAttribute("aria-label", copy.languageSwitcherLabel);
-
   wrapper.querySelectorAll(".language-option").forEach((button) => {
     const active = button.dataset.lang === currentLanguage;
     button.classList.toggle("active", active);
@@ -218,68 +145,107 @@ function syncLanguageToggleState() {
   });
 }
 
-function ensurePoemFallbackNote(language) {
-  if (!poemOriginalContent) {
-    return;
+function setGoogleTranslateCookie(language) {
+  const value = language === "mr" ? "/mr/mr" : `/mr/${language}`;
+  const baseCookie = `googtrans=${value};path=/`;
+  document.cookie = baseCookie;
+
+  const host = window.location.hostname;
+  if (host && host.includes(".")) {
+    document.cookie = `googtrans=${value};path=/;domain=.${host}`;
   }
-
-  const poemTitle = document.querySelector(".poem-title");
-  const poemText = document.querySelector(".poem-text");
-  if (!poemTitle || !poemText) {
-    return;
-  }
-
-  const poemId = getPoemPageId();
-  const translatedPoem = poemId ? poemTranslationCatalog[language]?.[poemId] : null;
-  const noteText = (uiTranslations[language] || uiTranslations.mr).poemFallback;
-
-  if (translatedPoem && translatedPoem.title && translatedPoem.text) {
-    poemTitle.textContent = translatedPoem.title;
-    poemText.textContent = translatedPoem.text;
-    document.title = translatedPoem.title;
-    const existing = document.querySelector(".translation-note");
-    if (existing) {
-      existing.remove();
-    }
-    return;
-  }
-
-  poemTitle.textContent = poemOriginalContent.title;
-  poemText.textContent = poemOriginalContent.text;
-  document.title = poemOriginalContent.documentTitle;
-
-  if (language === "mr") {
-    const existing = document.querySelector(".translation-note");
-    if (existing) {
-      existing.remove();
-    }
-    return;
-  }
-
-  let note = document.querySelector(".translation-note");
-  if (!note) {
-    note = document.createElement("p");
-    note.className = "translation-note";
-    const poemMeta = document.querySelector(".poem-meta");
-    if (poemMeta) {
-      poemMeta.insertAdjacentElement("afterend", note);
-    } else {
-      poemTitle.insertAdjacentElement("afterend", note);
-    }
-  }
-  note.textContent = noteText;
 }
 
-function setLanguage(language) {
+function ensureGoogleTranslateHost() {
+  if (!document.getElementById("google_translate_element")) {
+    const host = document.createElement("div");
+    host.id = "google_translate_element";
+    host.style.display = "none";
+    document.body.appendChild(host);
+  }
+}
+
+function applyLanguageToGoogleWidget() {
+  const select = document.querySelector(".goog-te-combo");
+  if (!select) {
+    return false;
+  }
+
+  const target = currentLanguage === "mr" ? "" : currentLanguage;
+  if (select.value !== target) {
+    select.value = target;
+    select.dispatchEvent(new Event("change"));
+  }
+  return true;
+}
+
+function initGoogleTranslateElement() {
+  if (!window.google || !window.google.translate || !window.google.translate.TranslateElement) {
+    return;
+  }
+
+  if (!window.__kesarTranslateInitialized) {
+    window.__kesarTranslateInitialized = true;
+    window.__kesarTranslateInstance = new window.google.translate.TranslateElement(
+      {
+        pageLanguage: "mr",
+        includedLanguages: "mr,hi,en",
+        autoDisplay: false,
+      },
+      "google_translate_element"
+    );
+  }
+
+  setTimeout(() => {
+    applyLanguageToGoogleWidget();
+  }, 300);
+}
+
+window.googleTranslateElementInit = initGoogleTranslateElement;
+
+function loadGoogleTranslateScript() {
+  ensureGoogleTranslateHost();
+
+  if (window.google && window.google.translate && window.google.translate.TranslateElement) {
+    initGoogleTranslateElement();
+    return;
+  }
+
+  if (document.getElementById("google-translate-script")) {
+    return;
+  }
+
+  const script = document.createElement("script");
+  script.id = "google-translate-script";
+  script.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+  script.async = true;
+  document.body.appendChild(script);
+}
+
+function setLanguage(language, options = {}) {
   const nextLanguage = supportedLanguages.includes(language) ? language : "mr";
+  const reload = options.reload !== false;
+
   currentLanguage = nextLanguage;
   document.documentElement.lang = nextLanguage;
   localStorage.setItem(languageStorageKey, nextLanguage);
+  setGoogleTranslateCookie(nextLanguage);
   syncLanguageToggleState();
-  ensureFooterLinks(nextLanguage);
-  ensurePoemFallbackNote(nextLanguage);
   setTheme(document.body.dataset.theme || "day");
+
+  if (nextLanguage !== "mr") {
+    loadGoogleTranslateScript();
+  }
+
+  if (reload) {
+    window.location.reload();
+  }
 }
 
+ensureFooterLinks();
 ensureLanguageToggle();
-setLanguage(currentLanguage);
+setLanguage(currentLanguage, { reload: false });
+
+if (currentLanguage !== "mr") {
+  loadGoogleTranslateScript();
+}
