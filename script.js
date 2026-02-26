@@ -69,3 +69,28 @@ if (poemList) {
     poemList.appendChild(li);
   }
 }
+
+function ensureFooterLinks() {
+  const footer = document.querySelector("footer");
+  if (!footer || footer.querySelector(".footer-links")) {
+    return;
+  }
+
+  const links = document.createElement("p");
+  links.className = "footer-links";
+  links.innerHTML = [
+    '<a href="#" aria-label="Facebook placeholder">Facebook</a>',
+    '<a href="#" aria-label="Instagram placeholder">Instagram</a>',
+    '<a href="https://wa.me/919881241620" target="_blank" rel="noopener noreferrer">WhatsApp: +91 98812 41620</a>',
+    '<a href="mailto:chaitrali.pandharpure@gmail.com">chaitrali.pandharpure@gmail.com</a>',
+  ].join(" • ");
+
+  const copyright = footer.querySelector(".copyright");
+  if (copyright) {
+    footer.insertBefore(links, copyright);
+  } else {
+    footer.appendChild(links);
+  }
+}
+
+ensureFooterLinks();
