@@ -1,24 +1,39 @@
 <!DOCTYPE html>
-<html lang="mr">
+<html lang="mr" data-lang="mr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="आभासी जगाचा राजा — कवयित्री चैत्राली पंढरपुरे यांच्या कविता संग्रहातील कविता. English & Hindi translation available." />
+  <meta name="author" content="Chaitrali Pandharpure" />
   <title>आभासी जगाचा राजा</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Marathi:ital@0;1&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Tiro+Devanagari+Marathi:ital@0;1&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../style.css" />
   <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("kesar_tarang_theme");
+        if (!t) t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "night" : "day";
+        document.documentElement.dataset.theme = t;
+        var l = localStorage.getItem("kesar_tarang_language");
+        if (l === "hi" || l === "en" || l === "mr") document.documentElement.dataset.lang = l;
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
+  <a class="skip-link" href="#main">मजकुराकडे जा</a>
   <div class="backdrop" aria-hidden="true"></div>
   <button id="theme-toggle" class="theme-toggle" type="button" aria-label="दिवस-रात्र थीम बदला"></button>
-  <main class="poem-page">
-    <article class="card">
+  <main class="poem-page" id="main">
+    <article class="card reveal">
       <a class="back-link back-link-top" href="../index.html">मुख्य पानावर जा</a>
       <h1 class="poem-title">आभासी जगाचा राजा</h1>
       <p class="poem-meta">लेखिका: चैत्राली</p>
-      <div class="poem-text">
+      <div class="ornament poem-rule"><span class="ornament__mark"></span></div>
+      <div class="poem-text" lang="mr">
 आभासी जगाचा राजा तू,
 म्हणतोस मला हो माझी राणी तू.
 भावना ईमोजी, प्रेम डिजीटल अन् पैसा प्लॅस्टिक,
@@ -55,16 +70,8 @@
     <p>चैत्र तरंग • चैत्राली कविता संग्रह</p>
     <p class="copyright">© Chaitrali Pandharpure</p>
   </footer>
+  <script src="../ai-config.js"></script>
+  <script src="../translations.js"></script>
   <script src="../script.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-

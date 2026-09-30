@@ -1,0 +1,16 @@
+{
+  "name": "kesar-tarang",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static site for poet Chaitrali Pandharpure — 30 Marathi poems with English and Hindi translation support.",
+  "type": "module",
+  "scripts": {
+    "test": "node scripts/smoke.mjs",
+    "translate": "node scripts/translate.mjs",
+    "translate:check": "node scripts/translate.mjs --check",
+    "translate:reset": "node scripts/translate.mjs --reset"
+  },
+  "devDependencies": {
+    "jsdom": "^25.0.0"
+  }
+}

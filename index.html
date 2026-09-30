@@ -1,64 +1,94 @@
 <!DOCTYPE html>
-<html lang="mr">
+<html lang="mr" data-lang="mr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chaitra Tarang | चैत्रालीच्या कविता</title>
-  <meta name="description" content="चैत्रालीच्या ३० कवितांचा कलात्मक संग्रह (मराठी + १ इंग्रजी)" />
+  <title>चैत्र तरंग | Kesar Tarang — चैत्राली पंढरपुरे</title>
+  <meta name="description" content="कवयित्री चैत्राली पंढरपुरे यांच्या ३० कवितांचा संग्रह — प्रेम, नाती, स्त्रीमन, निसर्ग आणि अंतर्मनाच्या आविष्कारांचे कवितात्मक निवडणीक. English & Hindi translations available." />
+  <meta name="author" content="Chaitrali Pandharpure" />
+  <meta property="og:title" content="चैत्र तरंग | Kesar Tarang" />
+  <meta property="og:description" content="प्रेम, नाती आणि अंतर्मनाचे स्वर — ३० कवितांचा संग्रह" />
+  <meta property="og:type" content="website" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Marathi:ital@0;1&family=Marcellus&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Tiro+Devanagari+Marathi:ital@0;1&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+  <link rel="alternate" hreflang="mr" href="/" />
+  <link rel="alternate" hreflang="en" href="/?lang=en" />
+  <link rel="alternate" hreflang="hi" href="/?lang=hi" />
+  <script>
+    /* Set theme + language before first paint to avoid a flash */
+    (function () {
+      try {
+        var t = localStorage.getItem("kesar_tarang_theme");
+        if (!t) t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "night" : "day";
+        document.documentElement.dataset.theme = t;
+        var l = localStorage.getItem("kesar_tarang_language");
+        if (l === "hi" || l === "en" || l === "mr") document.documentElement.dataset.lang = l;
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
+  <a class="skip-link" href="#main">मजकुराकडे जा</a>
   <div class="backdrop" aria-hidden="true"></div>
+
   <header class="hero">
-    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="दिवस-रात्र थीम बदला"></button>
     <div class="hero-text">
       <p class="brand">चैत्र तरंग</p>
-      <p class="quick-links"><a class="bio-link" href="bio.html">चैत्राली परिचय</a></p>
-      <h1>प्रेम, नाती आणि अंतर्मनाचे स्वर</h1>
-      <p class="subtitle">प्रेम, कुटुंब, स्त्रीमन, वेदना आणि आशेच्या छटांनी सजलेल्या कवितांचा हा संग्रह!</p>
+      <h1>प्रेम, नाती आणि<br /><em>अंतर्मनाचे स्वर</em></h1>
+      <p class="subtitle">
+        प्रेम, कुटुंब, स्त्रीमन, वेदना आणि आशेच्या छटांनी सजलेल्या
+        तीस कवितांचा हा संग्रह — मराठीत, आणि आता English व हिंदीतही.
+      </p>
+      <div class="hero-actions">
+        <a class="btn" href="#collection">कविता वाचा</a>
+        <a class="btn btn--ghost" href="bio.html">चैत्राली परिचय</a>
+      </div>
     </div>
-    <div class="portrait-wrap">
-      <img src="assets/chaitrali.jpg" alt="कवयित्री चैत्राली" class="portrait" />
-    </div>
+
+    <figure class="portrait-wrap">
+      <img src="assets/chaitrali.jpg" alt="कवयित्री चैत्राली पंढरपुरे" class="portrait" width="330" height="440" fetchpriority="high" decoding="async" />
+      <figcaption class="portrait-caption">कवयित्री चैत्राली पंढरपुरे</figcaption>
+    </figure>
   </header>
 
-  <main>
-    <section class="bio card">
-      <h2>चैत्राली बद्दल</h2>
+  <main id="main">
+    <section class="card bio reveal">
+      <p class="eyebrow">चैत्राली बद्दल</p>
+      <h2>दैनंदिन जीवनाचे कवितात्मक निवडणीक</h2>
       <p>
         चैत्राली या आधुनिक मराठी कवयित्री आहेत. त्यांच्या कवितांतून दैनंदिन जीवनातील लहान क्षण,
         नात्यांची उब, स्त्रीमनाचे सूक्ष्म रंग आणि निसर्गाची नाजूक हालचाल व्यक्त होते.
         त्यांची भाषा साधी, प्रतिमा जिवंत, आणि भावस्पर्शी आहे.
       </p>
+      <p>
+        प्रत्येक कवितेखाली — जिथे उपलब्ध असेल तिथे — कवयित्रीच्या स्वतःच्या शब्दांतील
+        English आणि हिंदी अनुवाद दिलेले आहेत.
+      </p>
       <p><a class="bio-link" href="bio.html">सविस्तर परिचय वाचा</a></p>
     </section>
 
-    <section class="collection card">
+    <section class="card collection reveal" id="collection">
       <div class="section-head">
-        <h2>कविता संग्रह</h2>
-        <p>खालील प्रत्येक दुव्यावरून स्वतंत्र कविता पान उघडेल.</p>
+        <p class="eyebrow">कविता संग्रह</p>
+        <h2>तीस कविता</h2>
+        <p class="section-count">30 Poems · Marathi · English · हिंदी</p>
+        <div class="ornament"><span class="ornament__mark"></span></div>
       </div>
+      <p>खालील प्रत्येक नावावर क्लिक केल्यावर संपूर्ण कविता उघडेल.</p>
       <ol class="poem-grid" id="poem-list"></ol>
     </section>
   </main>
 
   <footer>
     <p>चैत्र तरंग • चैत्राली कविता संग्रह</p>
-      <p class="copyright">© Chaitrali Pandharpure</p>
+    <p class="copyright">© Chaitrali Pandharpure</p>
   </footer>
 
+  <script src="ai-config.js"></script>
+  <script src="translations.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
