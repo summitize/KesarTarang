@@ -27,8 +27,29 @@
    For a public site you probably want the batch route instead,
    which needs no server at all:
       OPENAI_API_KEY=sk-... node scripts/translate.mjs
+
+
+   THE AI AGENT (कवितामित्र)
+   ------------------------------------------------------------
+   The guide in the corner of every page already answers, with no
+   network at all, anything about these thirty poems, the themes
+   and the language switch. It only calls out when it does not
+   recognise a question.
+
+   Point `agentEndpoint` at a proxy to let a real model answer
+   those. The agent sends:
+
+      POST  { message, lang, theme }
+      200   { reply: "<answer>" }
+
+   The answer is shown to the reader labelled as an AI answer. If
+   the call fails or times out (12s), the agent falls back to
+   saying it does not know — it never invents an answer.
+
+   Leave `agentEndpoint` empty and the site stays entirely static.
    ============================================================ */
 
 window.KESAR_AI = {
   endpoint: "", // e.g. "https://your-proxy.example.com/translate"
+  agentEndpoint: "", // e.g. "https://your-proxy.example.com/agent"
 };

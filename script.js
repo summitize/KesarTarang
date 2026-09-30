@@ -41,6 +41,45 @@ const SUPPORTED_LANGS = ["mr", "hi", "en"];
 const LANG_LABELS = { mr: "MR", hi: "HI", en: "EN" };
 const LANG_NAMES = { mr: "मराठी", hi: "हिंदी", en: "English" };
 
+/* ----------------------------------------------------------------
+   Themes
+   ----------------------------------------------------------------
+   Two plain ones and six that recolour the same paper-and-ink
+   system. `mode` decides which half of the night styling applies;
+   `chip` is the three colours the picker swatch paints itself with,
+   so a reader recognises a theme before they select it.
+
+   Adding a theme: a block in style.css plus an entry here. The
+   pre-paint bootstrap in each page validates against THEME_IDS, so
+   that list has to stay in step (scripts/sync-shell.mjs does it).
+   ---------------------------------------------------------------- */
+
+const THEMES = [
+  { id: "day", mode: "day", label: "दिवस", latin: "Day", chip: ["#f6f1e7", "#b23a2a", "#2a2118"] },
+  { id: "night", mode: "night", label: "रात्र", latin: "Night", chip: ["#141220", "#e0a458", "#f0e7d8"] },
+  { id: "kesar", mode: "day", label: "केसर", latin: "Kesar", chip: ["#fdf3e2", "#cf6a12", "#3b2410"] },
+  { id: "himalaya", mode: "day", label: "हिमाल", latin: "Himalaya", chip: ["#eef3f4", "#166b74", "#1c2b31"] },
+  { id: "rang", mode: "day", label: "रंग", latin: "Rang", chip: ["#f2f6ea", "#4a7a2e", "#23301b"] },
+  { id: "indra", mode: "night", label: "इंद्र", latin: "Indra", chip: ["#171233", "#b58cff", "#ece7ff"] },
+  { id: "agni", mode: "night", label: "अग्नि", latin: "Agni", chip: ["#1d1411", "#ff7f42", "#f7e6d8"] },
+  { id: "nila", mode: "night", label: "नील", latin: "Neel", chip: ["#0d1b2a", "#4fb0e0", "#dfeaf5"] },
+];
+
+const THEME_IDS = THEMES.map((theme) => theme.id);
+const DEFAULT_DARK_THEME = "night";
+const DEFAULT_LIGHT_THEME = "day";
+
+function getTheme(themeId) {
+  return THEMES.find((theme) => theme.id === themeId) || THEMES[0];
+}
+
+function resolveTheme(themeId) {
+  const found = THEMES.find((theme) => theme.id === themeId);
+  if (found) return found;
+  const prefersNight = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  return getTheme(prefersNight ? DEFAULT_DARK_THEME : DEFAULT_LIGHT_THEME);
+}
+
 const prefersReducedMotion =
   window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -77,35 +116,196 @@ function ensureThemeToggle() {
   return themeToggle;
 }
 
-function setTheme(theme) {
-  const next = theme === "night" ? "night" : "day";
-  document.documentElement.dataset.theme = next;
-  if (document.body) document.body.dataset.theme = next;
+function setTheme(themeId, options = {}) {
+  const { persist = true } = options;
+  const theme = resolveTheme(themeId);
 
+  document.documentElement.dataset.theme = theme.id;
+  document.documentElement.dataset.mode = theme.mode;
+  if (document.body) {
+    document.body.dataset.theme = theme.id;
+    document.body.dataset.mode = theme.mode;
+  }
+
+  if (persist) {
+    try {
+      localStorage.setItem(THEME_KEY, theme.id);
+    } catch (e) {
+      /* Private mode: the theme still applies, it just will not survive. */
+    }
+  }
+
+  /* The quick button steps between the two plain light/dark themes,
+     so a reader on, say, Kesar can still flip the lights in one tap. */
   if (themeToggle) {
-    const label = next === "night" ? "दिवस थीम" : "रात्री थीम";
-    themeToggle.setAttribute("aria-pressed", next === "night" ? "true" : "false");
+    const toLight = theme.mode === "night";
+    const label = toLight ? "दिवस थीम" : "रात्री थीम";
+    themeToggle.setAttribute("aria-pressed", toLight ? "true" : "false");
     themeToggle.setAttribute("aria-label", label);
     themeToggle.title = label;
   }
+
+  syncThemePicker();
+  document.dispatchEvent(
+    new CustomEvent("kesar:theme", { detail: { theme: theme.id, mode: theme.mode } })
+  );
+  return theme;
+}
+
+function currentTheme() {
+  return resolveTheme(document.documentElement.dataset.theme);
 }
 
 function initTheme() {
   ensureThemeToggle();
   if (themeToggle) themeToggle.innerHTML = SUN_ICON + MOON_ICON;
 
-  const saved = localStorage.getItem(THEME_KEY);
-  const prefersNight = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-  setTheme(saved || (prefersNight ? "night" : "day"));
+  setTheme(localStorage.getItem(THEME_KEY) || document.documentElement.dataset.theme, {
+    persist: false,
+  });
 
   if (themeToggle) {
     themeToggle.addEventListener("click", () => {
-      const next = document.documentElement.dataset.theme === "night" ? "day" : "night";
-      setTheme(next);
-      localStorage.setItem(THEME_KEY, next);
+      const mode = document.documentElement.dataset.mode;
+      setTheme(mode === "night" ? DEFAULT_LIGHT_THEME : DEFAULT_DARK_THEME);
     });
   }
 }
+
+/* ----------------------------------------------------------------
+   Theme picker
+   ---------------------------------------------------------------- */
+
+const SWATCH_ICON = '<span class="swatch" aria-hidden="true"><i></i><i></i><i></i></span>';
+
+let themePicker = document.getElementById("theme-picker");
+let themePickerToggle = document.getElementById("theme-picker-toggle");
+
+function ensureThemePicker() {
+  if (themePickerToggle) return themePickerToggle;
+
+  themePickerToggle = document.createElement("button");
+  themePickerToggle.id = "theme-picker-toggle";
+  themePickerToggle.className = "theme-picker-toggle";
+  themePickerToggle.type = "button";
+  themePickerToggle.innerHTML = SWATCH_ICON;
+  themePickerToggle.setAttribute("aria-haspopup", "true");
+  themePickerToggle.setAttribute("aria-expanded", "false");
+  themePickerToggle.setAttribute("aria-controls", "theme-picker");
+  themePickerToggle.setAttribute("aria-label", "थीम निवडा / Choose a theme");
+  themePickerToggle.title = "थीम निवडा / Theme";
+
+  themePicker = document.createElement("div");
+  themePicker.id = "theme-picker";
+  themePicker.className = "theme-picker";
+  themePicker.hidden = true;
+  themePicker.setAttribute("role", "group");
+  themePicker.setAttribute("aria-label", "थीम / Theme");
+
+  const head = document.createElement("div");
+  head.className = "theme-picker__head";
+  const title = document.createElement("p");
+  title.className = "theme-picker__title";
+  title.textContent = "थीम निवडा";
+  const hint = document.createElement("span");
+  hint.className = "theme-picker__hint";
+  hint.textContent = `${THEMES.length} Themes`;
+  head.append(title, hint);
+
+  const options = document.createElement("div");
+  options.className = "theme-options";
+  options.setAttribute("role", "radiogroup");
+
+  for (const theme of THEMES) {
+    const option = document.createElement("button");
+    option.type = "button";
+    option.className = "theme-option";
+    option.dataset.theme = theme.id;
+    option.setAttribute("role", "radio");
+    option.setAttribute("aria-checked", "false");
+
+    const chip = document.createElement("span");
+    chip.className = "theme-chip";
+    chip.setAttribute("aria-hidden", "true");
+    chip.style.setProperty("--chip-a", theme.chip[0]);
+    chip.style.setProperty("--chip-b", theme.chip[1]);
+    chip.style.setProperty("--chip-c", theme.chip[2]);
+
+    const name = document.createElement("span");
+    name.className = "theme-option__name";
+    name.textContent = theme.label;
+
+    option.append(chip, name);
+    option.title = `${theme.latin} · ${theme.label}`;
+    option.setAttribute("aria-label", `${theme.latin} theme`);
+    option.addEventListener("click", () => {
+      setTheme(theme.id);
+      closeThemePicker();
+      themePickerToggle.focus();
+    });
+    options.appendChild(option);
+  }
+
+  themePicker.append(head, options);
+
+  const dock = document.querySelector(".control-dock");
+  if (dock) {
+    /* Between the light/dark button and the language toggle. */
+    const languageToggle = document.getElementById("language-toggle");
+    if (languageToggle) dock.insertBefore(themePickerToggle, languageToggle);
+    else dock.appendChild(themePickerToggle);
+    dock.appendChild(themePicker);
+  } else {
+    document.body.append(themePickerToggle);
+    document.body.appendChild(themePicker);
+  }
+
+  themePickerToggle.addEventListener("click", (event) => {
+    event.stopPropagation();
+    themePicker.hidden ? openThemePicker() : closeThemePicker();
+  });
+
+  /* Paint the current selection now that the options exist. */
+  syncThemePicker();
+
+  return themePickerToggle;
+}
+
+function openThemePicker() {
+  if (!themePicker) return;
+  themePicker.hidden = false;
+  themePickerToggle.setAttribute("aria-expanded", "true");
+  const active = themePicker.querySelector('.theme-option[aria-checked="true"]');
+  (active || themePicker.querySelector(".theme-option"))?.focus();
+}
+
+function closeThemePicker() {
+  if (!themePicker) return;
+  themePicker.hidden = true;
+  themePickerToggle?.setAttribute("aria-expanded", "false");
+}
+
+function syncThemePicker() {
+  if (!themePicker) return;
+  const active = document.documentElement.dataset.theme;
+  themePicker.querySelectorAll(".theme-option").forEach((option) => {
+    option.setAttribute("aria-checked", option.dataset.theme === active ? "true" : "false");
+  });
+}
+
+/* Dismissal is handled once, on the document, so a click anywhere
+   outside the picker — the agent included — closes it. */
+document.addEventListener("click", (event) => {
+  if (!themePicker || themePicker.hidden) return;
+  if (themePicker.contains(event.target) || themePickerToggle?.contains(event.target)) return;
+  closeThemePicker();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape" || !themePicker || themePicker.hidden) return;
+  closeThemePicker();
+  themePickerToggle?.focus();
+});
 
 /* ----------------------------------------------------------------
    Control dock — theme + language live together
@@ -732,6 +932,7 @@ function setLanguage(language) {
   localStorage.setItem(LANG_KEY, next);
   setGoogleTranslateCookie(next);
   syncLanguageToggleState();
+  document.dispatchEvent(new CustomEvent("kesar:language", { detail: { language: next } }));
 
   if (next === "mr") {
     clearTranslationPanel();
@@ -752,6 +953,34 @@ function setLanguage(language) {
   loadGoogleTranslateScript();
   applyGoogleLanguage();
 }
+
+/* ----------------------------------------------------------------
+   Public API
+   ----------------------------------------------------------------
+   agent.js needs these, and so does anything else added later. They
+   are published on window rather than left as bare globals: `let`
+   and `const` at the top level of a classic script are shared
+   between scripts in a browser, but not across separate eval scopes,
+   so relying on them makes the code harder to test and to reuse.
+   ---------------------------------------------------------------- */
+
+window.KESAR = {
+  poems,
+  themes: THEMES,
+  themeIds: THEME_IDS,
+  getTheme,
+  currentTheme,
+  setTheme,
+  openThemePicker,
+  closeThemePicker,
+  themesAre: () => THEMES.length,
+  get language() {
+    return currentLanguage;
+  },
+  setLanguage,
+  langNames: LANG_NAMES,
+  hasTranslation,
+};
 
 /* ----------------------------------------------------------------
    Footer links
@@ -801,9 +1030,12 @@ function init() {
   /* Arm the scroll-reveal only now that we know JS is running. */
   document.documentElement.classList.add("js-reveal");
 
+  /* Order matters: the dock and the language toggle must exist before
+     the theme picker, which slots itself between them. */
   initTheme();
   mountControlDock();
   syncLanguageToggleState();
+  ensureThemePicker();
   ensureFooterLinks();
 
   const poemText = preparePoemText();
@@ -823,6 +1055,9 @@ function init() {
     loadGoogleTranslateScript();
     applyGoogleLanguage();
   }
+
+  /* The agent mounts last, once every language and theme is settled. */
+  if (typeof ensureAgent === "function") ensureAgent();
 }
 
 if (document.readyState === "loading") {

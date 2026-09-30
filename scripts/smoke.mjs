@@ -64,6 +64,7 @@ function boot(relativePath, lang, options = {}) {
   }
 
   window.eval(fs.readFileSync(path.join(ROOT, "script.js"), "utf8"));
+  window.eval(fs.readFileSync(path.join(ROOT, "agent.js"), "utf8"));
   window.document.dispatchEvent(new window.Event("DOMContentLoaded"));
 
   return dom;
@@ -96,6 +97,21 @@ console.log("\n  style.css");
   }
   check("night theme is driven from <html>",
     selectors.some((s) => s.includes('[data-theme="night"]')));
+
+  /* Every theme the JS advertises must actually have a palette block,
+     or selecting it would silently fall back to the previous theme. */
+  for (const id of ["day", "night", "kesar", "himalaya", "rang", "indra", "agni", "nila"]) {
+    check(`palette defined for ${id}`,
+      selectors.includes(`html[data-theme="${id}"]`));
+  }
+  check("dark rules key off data-mode, not the theme name",
+    selectors.some((s) => s.includes('[data-mode="night"]')));
+
+  /* The dark and light branches of the paper texture must both exist. */
+  check("grain adapts to dark themes",
+    css.includes('html[data-mode="night"] body::after'));
+  check("agent and theme-picker styles defined",
+    css.includes(".agent-panel") && css.includes(".theme-picker"));
   await settle();
 }
 
@@ -271,7 +287,247 @@ console.log("\n  poems/poem-30.html  (nav bounds)");
   await settle();
 }
 
+/* ---------------- Themes ---------------- */
+
+console.log("\n  themes  (picker, switching, persistence)");
+{
+  const dom = boot("index.html", "mr");
+  const doc = dom.window.document;
+  const html = doc.documentElement;
+  const click = (node) => node.dispatchEvent(new dom.window.MouseEvent("click", { bubbles: true }));
+
+  check("theme picker mounted in the dock",
+    Boolean(doc.querySelector(".control-dock #theme-picker-toggle")));
+  check("picker is closed to begin with", doc.getElementById("theme-picker").hidden === true);
+  check("all 8 themes offered", doc.querySelectorAll(".theme-option").length === 8,
+    `got ${doc.querySelectorAll(".theme-option").length}`);
+  check("current theme is marked checked",
+    doc.querySelectorAll('.theme-option[aria-checked="true"]').length === 1);
+  check("every option carries a colour chip",
+    [...doc.querySelectorAll(".theme-option")].every((o) => {
+      const chip = o.querySelector(".theme-chip");
+      return chip && chip.style.getPropertyValue("--chip-a");
+    }));
+
+  click(doc.getElementById("theme-picker-toggle"));
+  check("picker opens on click", doc.getElementById("theme-picker").hidden === false);
+  check("toggle reports expanded state",
+    doc.getElementById("theme-picker-toggle").getAttribute("aria-expanded") === "true");
+
+  click(doc.querySelector('.theme-option[data-theme="kesar"]'));
+  check("theme applied to <html>", html.dataset.theme === "kesar");
+  check("light theme sets data-mode=day", html.dataset.mode === "day");
+  check("theme applied to <body> too", doc.body.dataset.theme === "kesar");
+  check("theme persisted", dom.window.localStorage.getItem("kesar_tarang_theme") === "kesar");
+  check("picker closes after choosing", doc.getElementById("theme-picker").hidden === true);
+  check("selection is now the checked one",
+    doc.querySelector('.theme-option[data-theme="kesar"]').getAttribute("aria-checked") === "true");
+
+  /* A dark theme must set the mode, which is what the night rules read. */
+  click(doc.querySelector('.theme-option[data-theme="nila"]'));
+  check("dark theme sets data-mode=night", html.dataset.mode === "night");
+  check("dark theme persisted", dom.window.localStorage.getItem("kesar_tarang_theme") === "nila");
+
+  /* The quick button steps between the two plain light/dark themes. */
+  click(doc.getElementById("theme-toggle"));
+  check("quick toggle leaves a dark theme for day", html.dataset.theme === "day",
+    `now ${html.dataset.theme}`);
+  click(doc.getElementById("theme-toggle"));
+  check("quick toggle returns to night", html.dataset.theme === "night");
+
+  click(doc.getElementById("theme-picker-toggle"));
+  doc.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+  check("Escape closes the picker", doc.getElementById("theme-picker").hidden === true);
+  await settle();
+}
+
+console.log("\n  themes  (the picker and the agent share the corner)");
+{
+  const dom = boot("index.html", "mr");
+  const doc = dom.window.document;
+
+  /* Both live above the dock in the same corner, so the picker has to
+     be layered over the agent, not behind it. */
+  const css = fs.readFileSync(path.join(ROOT, "style.css"), "utf8");
+  const pickerLayer = Number(css.match(/\.theme-picker \{[^}]*z-index:\s*(\d+)/s)?.[1]);
+  const agentLayer = Number(css.match(/\.agent-panel \{[^}]*z-index:\s*(\d+)/s)?.[1]);
+  check("theme picker layers above the agent panel", pickerLayer > agentLayer,
+    `picker ${pickerLayer}, agent ${agentLayer}`);
+
+  /* Opening the agent must not leave the picker hanging open. */
+  doc.getElementById("theme-picker-toggle").dispatchEvent(
+    new dom.window.MouseEvent("click", { bubbles: true })
+  );
+  check("picker is open", doc.getElementById("theme-picker").hidden === false);
+  doc.getElementById("agent-fab").dispatchEvent(
+    new dom.window.MouseEvent("click", { bubbles: true })
+  );
+  check("opening the agent closes the picker",
+    doc.getElementById("theme-picker").hidden === true);
+  check("agent is now open", doc.getElementById("agent-panel").hidden === false);
+
+  /* Escape from inside the agent closes it and restores the button. */
+  doc.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+  check("Escape closes the agent", doc.getElementById("agent-panel").hidden === true);
+  check("agent button comes back", doc.getElementById("agent-fab").hidden === false);
+  await settle();
+}
+
+console.log("\n  themes  (an unknown stored value must not stick)");
+{
+  const dom = boot("index.html", "mr");
+  dom.window.localStorage.setItem("kesar_tarang_theme", "not-a-theme");
+  const doc = dom.window.document;
+  /* Resolve an unknown id exactly as the page does on load. */
+  dom.window.eval('window.KESAR.setTheme(localStorage.getItem("kesar_tarang_theme"));');
+  check("unrecognised theme falls back to a real one",
+    ["day", "night", "kesar", "himalaya", "rang", "indra", "agni", "nila"]
+      .includes(doc.documentElement.dataset.theme),
+    `got ${doc.documentElement.dataset.theme}`);
+  await settle();
+}
+
+/* ---------------- AI agent ---------------- */
+
+console.log("\n  agent  (mount, language, local answers)");
+{
+  const dom = boot("index.html", "mr");
+  const doc = dom.window.document;
+  const click = (node) => node.dispatchEvent(new dom.window.MouseEvent("click", { bubbles: true }));
+
+  check("agent button mounted", Boolean(doc.getElementById("agent-fab")));
+  check("agent panel mounted", Boolean(doc.getElementById("agent-panel")));
+  check("agent starts closed", doc.getElementById("agent-panel").hidden === true);
+  check("agent wears the cartoon portrait", Boolean(doc.querySelector("#agent-fab svg.agent-face")));
+  check("agent panel is labelled",
+    Boolean(doc.getElementById("agent-panel").getAttribute("aria-label")));
+  check("agent log is a polite live region",
+    doc.querySelector(".agent-log").getAttribute("aria-live") === "polite");
+  check("agent is named in Marathi by default",
+    doc.querySelector(".agent-name").textContent === "कवितामित्र");
+
+  click(doc.getElementById("agent-fab"));
+  check("agent opens on click", doc.getElementById("agent-panel").hidden === false);
+  check("agent greets the reader", doc.querySelectorAll(".agent-msg--bot").length === 1);
+  check("greeting offers suggestion chips", doc.querySelectorAll(".agent-chip").length > 0);
+
+  /* A poem number is answered from the local index, with no network. */
+  doc.querySelector(".agent-input").value = "14";
+  doc.querySelector(".agent-form").dispatchEvent(
+    new dom.window.Event("submit", { bubbles: true, cancelable: true })
+  );
+  await settle();
+
+  const log = doc.querySelector(".agent-log").textContent;
+  check("number query echoes the user", log.includes("14"));
+  check("number query counts the match", log.includes("अशा 1 कविता"));
+  check("answer links to the poem", doc.querySelector('.agent-chips a[href*="poem-14"]') !== null);
+  check("the linked poem is the one asked for",
+    doc.querySelector('.agent-chips a[href*="poem-14"]').textContent.includes("आई"));
+  check("typing indicator cleaned up", doc.querySelector("[data-typing]") === null);
+  await settle();
+}
+
+console.log("\n  agent  (acts on the site: theme and language)");
+{
+  const dom = boot("index.html", "mr");
+  const doc = dom.window.document;
+
+  const ask = async (text) => {
+    doc.querySelector(".agent-input").value = text;
+    doc.querySelector(".agent-form").dispatchEvent(
+      new dom.window.Event("submit", { bubbles: true, cancelable: true })
+    );
+    await settle();
+  };
+
+  await ask("night theme");
+  check("agent applies a named theme", doc.documentElement.dataset.theme === "night",
+    `got ${doc.documentElement.dataset.theme}`);
+
+  await ask("kesar");
+  check("agent applies a theme by id", doc.documentElement.dataset.theme === "kesar");
+
+  await ask("read this in english");
+  check("agent switches the site language", doc.documentElement.lang === "en");
+  check("agent relabels itself in the new language",
+    doc.querySelector(".agent-name").textContent === "Kavitamitra");
+  check("agent input placeholder follows the language",
+    doc.querySelector(".agent-input").placeholder === "Ask about a poem…");
+  check("agent answers in the new language too",
+    doc.querySelector(".agent-log").textContent.includes("Language changed to English"),
+    doc.querySelector(".agent-log").textContent.slice(-90));
+  await settle();
+}
+
+console.log("\n  agent  (a question it cannot answer)");
+{
+  const dom = boot("index.html", "en");
+  const doc = dom.window.document;
+
+  doc.querySelector(".agent-input").value = "who composed the score for the 1998 film";
+  doc.querySelector(".agent-form").dispatchEvent(
+    new dom.window.Event("submit", { bubbles: true, cancelable: true })
+  );
+  await settle();
+
+  check("unknown question is not answered with a poem",
+    !doc.querySelector('.agent-chips a[href*="poem-"]'));
+  check("agent admits it does not know",
+    doc.querySelector(".agent-log").textContent.includes("don't know"));
+  check("agent still offers a way forward", doc.querySelectorAll(".agent-chip").length > 0);
+  await settle();
+}
+
+console.log("\n  agent  (optional LLM endpoint)");
+{
+  const calls = [];
+  const dom = boot("index.html", "en", {
+    ai: { agentEndpoint: "https://proxy.example.test/agent" },
+    fetchImpl: async (url, init) => {
+      calls.push({ url, body: JSON.parse(init.body) });
+      return { ok: true, json: async () => ({ reply: "A translated, AI-written answer." }) };
+    },
+  });
+  const doc = dom.window.document;
+
+  doc.querySelector(".agent-input").value = "summarise her view of longing";
+  doc.querySelector(".agent-form").dispatchEvent(
+    new dom.window.Event("submit", { bubbles: true, cancelable: true })
+  );
+  await settle();
+
+  check("agent called the configured endpoint once", calls.length === 1, `got ${calls.length}`);
+  check("agent sent the reader's question",
+    calls[0]?.body.message === "summarise her view of longing");
+  check("agent sent the current language", calls[0]?.body.lang === "en");
+  check("agent sent the current theme", calls[0]?.body.theme === "day");
+  check("endpoint answer shown", doc.querySelector(".agent-log").textContent.includes("A translated"));
+  check("AI answer is labelled as such",
+    doc.querySelector(".agent-log").textContent.includes("AI answer"));
+  await settle();
+}
+
+console.log("\n  agent  (links are correct from a poem page)");
+{
+  const dom = boot("poems/poem-01.html", "mr");
+  const doc = dom.window.document;
+
+  doc.querySelector(".agent-input").value = "14";
+  doc.querySelector(".agent-form").dispatchEvent(
+    new dom.window.Event("submit", { bubbles: true, cancelable: true })
+  );
+  await settle();
+
+  const link = doc.querySelector('.agent-chips a[href*="poem-14"]');
+  check("poem link is relative to the poems folder",
+    link?.getAttribute("href") === "../poems/poem-14.html", `got ${link?.getAttribute("href")}`);
+  await settle();
+}
+
+
 console.log(`\n  ${checks - failures}/${checks} checks passed\n`);
+
 
 /* jsdom keeps timers alive; exit explicitly once we are done. */
 process.exit(failures ? 1 : 0);

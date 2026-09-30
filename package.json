@@ -6,6 +6,8 @@
   "type": "module",
   "scripts": {
     "test": "node scripts/smoke.mjs",
+    "sync": "node scripts/sync-shell.mjs",
+    "sync:check": "node scripts/sync-shell.mjs --check",
     "translate": "node scripts/translate.mjs",
     "translate:check": "node scripts/translate.mjs --check",
     "translate:reset": "node scripts/translate.mjs --reset"
